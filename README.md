@@ -7,7 +7,7 @@ Shared database library for PurgeBot. Wraps a pgx connection pool and exposes ty
 ```go
 import "github.com/PurgeBot-net/database"
 
-db, err := database.New(ctx, os.Getenv("DATABASE_URL"))
+db, err := database.New(ctx, "postgres://purgebot:password@postgres:5432/purgebot")
 if err != nil {
     log.Fatal(err)
 }
@@ -18,7 +18,7 @@ c, err := db.GetCustomization(ctx, guildID)
 
 ## Schema
 
-The schema is in `schema.sql` and is idempotent (`CREATE TABLE IF NOT EXISTS`). It is mounted into the Postgres container on first start via the docker repo's `docker-compose.yml`.
+The schema is in `schema.sql` and is idempotent (`CREATE TABLE IF NOT EXISTS`). A copy of it lives in the docker repo at `init/01_schema.sql`, which `docker-compose.yml` mounts into the Postgres container on first start.
 
 ### Tables
 
