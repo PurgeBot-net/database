@@ -18,3 +18,13 @@ CREATE TABLE IF NOT EXISTS purge_events (
 );
 
 CREATE INDEX IF NOT EXISTS purge_events_guild_id_idx ON purge_events (guild_id);
+
+CREATE TABLE IF NOT EXISTS guild_settings (
+    guild_id      BIGINT  PRIMARY KEY,
+    stats_enabled BOOLEAN NOT NULL DEFAULT true
+);
+
+CREATE TABLE IF NOT EXISTS guild_departures (
+    guild_id BIGINT      PRIMARY KEY,
+    left_at  TIMESTAMPTZ NOT NULL
+);

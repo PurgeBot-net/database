@@ -3,6 +3,8 @@ package database
 import (
 	"context"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 type RecordPurgeEventParams struct {
@@ -13,11 +15,26 @@ type RecordPurgeEventParams struct {
 	DurationMs int
 }
 
+// RecordPurgeEvent records nothing for a guild that turned stats off.
 func (db *Database) RecordPurgeEvent(ctx context.Context, p RecordPurgeEventParams) error {
-	_, err := db.pool.Exec(ctx, `
-		INSERT INTO purge_events (guild_id, purge_type, target_type, deleted, duration_ms)
-		VALUES ($1, $2, $3, $4, $5)
-	`, p.GuildID, p.PurgeType, p.TargetType, p.Deleted, p.DurationMs)
+	return pgx.BeginFunc(ctx, db.pool, func(tx pgx.Tx) error {
+		if err := lockGuildStats(ctx, tx, p.GuildID); err != nil {
+			return err
+		}
+		_, err := tx.Exec(ctx, `
+			INSERT INTO purge_events (guild_id, purge_type, target_type, deleted, duration_ms)
+			SELECT $1::bigint, $2::varchar, $3::varchar, $4::int, $5::int
+			WHERE NOT EXISTS (
+				SELECT 1 FROM guild_settings WHERE guild_id = $1 AND NOT stats_enabled
+			)
+		`, p.GuildID, p.PurgeType, p.TargetType, p.Deleted, p.DurationMs)
+		return err
+	})
+}
+
+// Orders RecordPurgeEvent and DisableStats per guild, so an opt-out's DELETE never misses a row committed meanwhile.
+func lockGuildStats(ctx context.Context, tx pgx.Tx, guildID int64) error {
+	_, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1::bigint)`, guildID)
 	return err
 }
 
