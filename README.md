@@ -23,6 +23,10 @@ Operator tools for server data requests, run by hand and never built into an ima
 - `go run ./cmd/exportguild -guildid <id>` writes `exports/guild-<id>.zip` (gitignored) with one JSON file per table and the avatar as an image. Built on `ExportGuild`.
 - `go run ./cmd/deleteguild -guildid <id> [-confirm]` deletes the server's rows but keeps a stats opt-out, and dates its departure 1970 so the next sweep removes the rest once Discord confirms the bot has left. Without `-confirm` it rolls back. Built on `DeleteGuild`.
 
+### `queries/`
+
+Read-only SQL to run by hand in a client like HeidiSQL. `stats-*` gives bot-wide numbers, `guild-*` shows what is stored for one server, and `ops-*` covers housekeeping. Every file starts with the question it answers, what to watch out for when reading the result, and which value to change. The `guild-stats-*` files reuse the SQL from `GetGuildStats`, so they give the same numbers as `/stats` as long as the session uses the server's default time zone.
+
 ## Schema
 
 The schema is in `schema.sql` and is idempotent (`CREATE TABLE IF NOT EXISTS`). A copy of it lives in the docker repo at `init/01_schema.sql`, which `docker-compose.yml` mounts into the Postgres container on first start.
