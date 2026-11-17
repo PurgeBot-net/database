@@ -2,17 +2,37 @@ package database
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 )
 
+var guildIDsWithDataSQL = func() string {
+	selects := make([]string, len(guildTables))
+	for i, t := range guildTables {
+		selects[i] = "SELECT guild_id FROM " + t.name
+	}
+	return strings.Join(selects, " UNION ")
+}()
+
+var deleteDepartedGuildsSQL = func() string {
+	var b strings.Builder
+	b.WriteString(`WITH due AS (
+		DELETE FROM guild_departures
+		WHERE guild_id = ANY($1::bigint[]) AND left_at < $2
+		RETURNING guild_id
+	)`)
+	for i, t := range guildTables {
+		fmt.Fprintf(&b, `, d%d AS (DELETE FROM %s WHERE guild_id IN (SELECT guild_id FROM due))`, i, t.name)
+	}
+	b.WriteString(` SELECT guild_id FROM due`)
+	return b.String()
+}()
+
 func (db *Database) GuildIDsWithData(ctx context.Context) ([]int64, error) {
-	rows, err := db.pool.Query(ctx, `
-		SELECT guild_id FROM customizations
-		UNION SELECT guild_id FROM purge_events
-		UNION SELECT guild_id FROM guild_settings
-	`)
+	rows, err := db.pool.Query(ctx, guildIDsWithDataSQL)
 	if err != nil {
 		return nil, err
 	}
@@ -63,22 +83,8 @@ type DeleteDepartedGuildsParams struct {
 	LeftBefore time.Time
 }
 
-// Every guild-keyed table must be deleted here and listed in GuildIDsWithData.
 func (db *Database) DeleteDepartedGuilds(ctx context.Context, p DeleteDepartedGuildsParams) ([]int64, error) {
-	rows, err := db.pool.Query(ctx, `
-		WITH due AS (
-			DELETE FROM guild_departures
-			WHERE guild_id = ANY($1::bigint[]) AND left_at < $2
-			RETURNING guild_id
-		), c AS (
-			DELETE FROM customizations WHERE guild_id IN (SELECT guild_id FROM due)
-		), e AS (
-			DELETE FROM purge_events WHERE guild_id IN (SELECT guild_id FROM due)
-		), s AS (
-			DELETE FROM guild_settings WHERE guild_id IN (SELECT guild_id FROM due)
-		)
-		SELECT guild_id FROM due
-	`, p.GuildIDs, p.LeftBefore)
+	rows, err := db.pool.Query(ctx, deleteDepartedGuildsSQL, p.GuildIDs, p.LeftBefore)
 	if err != nil {
 		return nil, err
 	}

@@ -3,9 +3,13 @@ CREATE TABLE IF NOT EXISTS customizations (
     bot_name        VARCHAR(32),
     bot_avatar      TEXT,
     remove_branding BOOLEAN     NOT NULL DEFAULT false,
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
-    updated_by      BIGINT      NOT NULL
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+DO $$ BEGIN
+    ALTER TABLE customizations ALTER COLUMN updated_by SET DEFAULT 0;
+EXCEPTION WHEN undefined_column THEN NULL;
+END $$;
 
 CREATE TABLE IF NOT EXISTS purge_events (
     id          BIGSERIAL   PRIMARY KEY,
