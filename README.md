@@ -33,9 +33,9 @@ The schema is in `schema.sql` and is idempotent (`CREATE TABLE IF NOT EXISTS`). 
 
 ### Tables
 
-| Table              | Description                                                       |
-| ------------------ | ----------------------------------------------------------------- |
-| `customizations`   | Per-guild bot name, avatar, and branding toggle (Premium)         |
-| `purge_events`     | Record of every completed purge job for stats                     |
-| `guild_settings`   | Per-guild settings: whether purge stats are kept                  |
-| `guild_departures` | When the bot left a guild, so its data is deleted 30 days later   |
+| Table              | Description                                                     |
+| ------------------ | --------------------------------------------------------------- |
+| `customizations`   | Per-guild bot name, avatar, and branding toggle (Premium)       |
+| `purge_events`     | Record of every completed purge job for stats                   |
+| `guild_settings`   | Per-guild settings: whether purge stats are kept                |
+| `guild_departures` | When the bot left a guild, so its data is deleted 30 days later |
