@@ -1,6 +1,7 @@
--- Has this server turned stats off, and is it marked as departed and waiting for the sweeper?
+-- Has this server turned stats off, which roles has it granted, and is it marked as departed and waiting for the sweeper?
 -- For a data request, run this together with guild-customization.sql and guild-purges.sql.
 -- stats_enabled NULL means there is no settings row, so stats are on (the default). false means opted out.
+-- access_role_ids are the roles granted with /settings access add. NULL means none, so only the owner can use the bot.
 -- No departure row does not mean the bot is in the server. Only servers with stored data ever get one.
 -- waiting: left_at is less than 720 hours (30 days) ago.
 -- due: older than that. Every hourly sweep asks Discord about the 100 oldest due rows and only deletes the
@@ -19,6 +20,7 @@ WITH params AS (
 SELECT
     p.guild_id,
     s.stats_enabled,
+    (SELECT array_agg(a.role_id ORDER BY a.role_id) FROM access_roles a WHERE a.guild_id = p.guild_id) AS access_role_ids,
     d.left_at AT TIME ZONE 'UTC' AS left_utc,
     CASE WHEN d.left_at > 'epoch' THEN (d.left_at + interval '720 hours') AT TIME ZONE 'UTC' END AS deletable_after_utc,
     CASE

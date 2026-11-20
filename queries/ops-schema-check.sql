@@ -1,6 +1,6 @@
 -- Which PurgeBot tables does this database have, and with which columns?
 -- Run it first on a database you have not checked. The other files expect customizations, purge_events,
--- guild_settings and guild_departures.
+-- guild_settings, access_roles and guild_departures.
 -- You get one row per expected table, plus any other table with a guild_id column.
 -- present false means the table is missing, and the files that read it will fail.
 -- known false means a table has guild_id but the GDPR tools in cmd do not know it, so they refuse to run.
@@ -8,7 +8,7 @@
 -- Nothing to edit.
 
 WITH expected(table_name) AS (
-    VALUES ('customizations'), ('purge_events'), ('guild_settings'), ('guild_departures')
+    VALUES ('customizations'), ('purge_events'), ('guild_settings'), ('access_roles'), ('guild_departures')
 ),
 tables AS (
     SELECT table_name FROM expected

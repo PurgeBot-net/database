@@ -9,15 +9,17 @@ import (
 
 type guildTable struct {
 	name string
-	// Narrows DeleteGuild to rows whose loss cannot undo a server's choice; the sweeper deletes the rest once the bot is gone.
+	// Narrows DeleteGuild to rows whose loss cannot undo a server's privacy choice; the sweeper deletes the rest once the bot is gone.
 	erasable string
 }
 
-// guild_departures is the sweeper's bookkeeping and is handled by name.
+// guild_departures is the sweeper's bookkeeping and is handled by name. access_roles is fully
+// erasable because losing grants only narrows access to the owner.
 var guildTables = []guildTable{
 	{name: "customizations"},
 	{name: "purge_events"},
 	{name: "guild_settings", erasable: "stats_enabled"},
+	{name: "access_roles"},
 }
 
 func guildTableNames() []string {

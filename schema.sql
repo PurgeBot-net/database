@@ -28,6 +28,12 @@ CREATE TABLE IF NOT EXISTS guild_settings (
     stats_enabled BOOLEAN NOT NULL DEFAULT true
 );
 
+CREATE TABLE IF NOT EXISTS access_roles (
+    guild_id BIGINT NOT NULL,
+    role_id  BIGINT NOT NULL,
+    PRIMARY KEY (guild_id, role_id)
+);
+
 CREATE TABLE IF NOT EXISTS guild_departures (
     guild_id BIGINT      PRIMARY KEY,
     left_at  TIMESTAMPTZ NOT NULL
