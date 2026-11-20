@@ -113,7 +113,7 @@ func (db *Database) fillDailyBars(ctx context.Context, guildID int64, days int, 
 
 	now := time.Now().UTC().Truncate(24 * time.Hour)
 	s.ChartBars = make([]DailyPurgeStat, days)
-	for i := 0; i < days; i++ {
+	for i := range days {
 		day := now.AddDate(0, 0, -(days - 1 - i))
 		if d, ok := byDate[day.Format("2006-01-02")]; ok {
 			s.ChartBars[i] = d
@@ -154,7 +154,7 @@ func (db *Database) fillMonthlyBars(ctx context.Context, guildID int64, s *Guild
 	now := time.Now().UTC()
 	firstOfMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, time.UTC)
 	s.ChartBars = make([]DailyPurgeStat, 12)
-	for i := 0; i < 12; i++ {
+	for i := range 12 {
 		month := firstOfMonth.AddDate(0, -(11 - i), 0)
 		if d, ok := byMonth[month.Format("2006-01")]; ok {
 			s.ChartBars[i] = d
