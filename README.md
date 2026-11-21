@@ -1,6 +1,6 @@
 # database
 
-Shared database library for PurgeBot. Wraps a pgx connection pool and exposes typed query functions. One file per table.
+Shared database library for PurgeBot. Wraps a pgx connection pool and exposes typed query functions. One file per table, plus `guilds.go` for exporting or deleting one server's data.
 
 ## Usage
 
@@ -29,14 +29,14 @@ Read-only SQL to run by hand in a client like HeidiSQL. `stats-*` gives bot-wide
 
 ## Schema
 
-The schema is in `schema.sql` and is idempotent (`CREATE TABLE IF NOT EXISTS`). A copy of it lives in the docker repo at `init/01_schema.sql`, which `docker-compose.yml` mounts into the Postgres container on first start.
+The schema is in `schema.sql` and is idempotent (`CREATE TABLE IF NOT EXISTS`). A copy of it lives in the docker repo at `init/01_schema.sql`, which `docker-compose.yml` mounts into the Postgres container on first start. A `DO` block also gives a legacy `customizations.updated_by` column a default of `0` on older databases that still have one; no code writes it.
 
 ### Tables
 
-| Table              | Description                                                     |
-| ------------------ | --------------------------------------------------------------- |
-| `customizations`   | Per-guild bot name, avatar, and branding toggle (Premium)       |
-| `purge_events`     | Record of every completed purge job for stats                   |
-| `guild_settings`   | Per-guild settings: whether purge stats are kept                |
-| `access_roles`     | Roles the server owner has allowed to use the bot               |
-| `guild_departures` | When the bot left a guild, so its data is deleted 30 days later |
+| Table              | Columns                                                                               | Description                                                                              |
+| ------------------ | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `customizations`   | `guild_id`, `bot_name`, `bot_avatar`, `remove_branding`, `updated_at`                 | Per-guild bot name, avatar image, and branding toggle (Premium)                          |
+| `purge_events`     | `id`, `guild_id`, `purge_type`, `target_type`, `deleted`, `duration_ms`, `created_at` | Record of each completed purge job for stats, unless the server turned stats off         |
+| `guild_settings`   | `guild_id`, `stats_enabled`                                                           | Per-guild settings: whether purge stats are kept                                         |
+| `access_roles`     | `guild_id`, `role_id`                                                                 | Roles the server owner has allowed to use the bot                                        |
+| `guild_departures` | `guild_id`, `left_at`                                                                 | When a sweep first found the bot gone from a guild, so its data is deleted after 30 days |
