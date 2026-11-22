@@ -7,15 +7,14 @@ import (
 )
 
 type GuildSettings struct {
-	GuildID      int64
 	StatsEnabled bool
 }
 
 func (db *Database) GetGuildSettings(ctx context.Context, guildID int64) (*GuildSettings, error) {
 	var s GuildSettings
 	err := db.pool.QueryRow(ctx, `
-		SELECT guild_id, stats_enabled FROM guild_settings WHERE guild_id = $1
-	`, guildID).Scan(&s.GuildID, &s.StatsEnabled)
+		SELECT stats_enabled FROM guild_settings WHERE guild_id = $1
+	`, guildID).Scan(&s.StatsEnabled)
 	if err == pgx.ErrNoRows {
 		return nil, nil
 	}

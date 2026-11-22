@@ -7,7 +7,7 @@ Shared database library for PurgeBot. Wraps a pgx connection pool and exposes ty
 ```go
 import "github.com/PurgeBot-net/database"
 
-db, err := database.New(ctx, "postgres://purgebot:password@postgres:5432/purgebot")
+db, err := database.New(ctx, cfg.Database.URL())
 if err != nil {
     log.Fatal(err)
 }
@@ -15,6 +15,10 @@ defer db.Close()
 
 c, err := db.GetCustomization(ctx, guildID)
 ```
+
+`database.Config` holds the env tags `DATABASE_HOST` (default `localhost`), `DATABASE_PORT` (`5432`), `DATABASE_NAME` (`purgebot`), `DATABASE_USER` (`purgebot`) and `DATABASE_PASSWORD`. Each service keeps it as the `Database` field of its own config. `URL()` builds the `postgres://` URL with user and password escaped, so any password works. `New` takes any pgx connection string, which is how the `cmd/` tools pass a libpq service.
+
+`GetCustomization` returns only the bot name and the branding toggle. The avatar stays in the table for the data export, and `UpsertCustomization` keeps the stored one when `BotAvatar` is nil.
 
 ### `cmd/`
 

@@ -3,9 +3,30 @@ package database
 import (
 	"context"
 	"fmt"
+	"net"
+	"net/url"
+	"strconv"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+type Config struct {
+	Host     string `env:"DATABASE_HOST"     envDefault:"localhost"`
+	Port     int    `env:"DATABASE_PORT"     envDefault:"5432"`
+	Name     string `env:"DATABASE_NAME"     envDefault:"purgebot"`
+	User     string `env:"DATABASE_USER"     envDefault:"purgebot"`
+	Password string `env:"DATABASE_PASSWORD"`
+}
+
+func (c Config) URL() string {
+	u := url.URL{
+		Scheme: "postgres",
+		User:   url.UserPassword(c.User, c.Password),
+		Host:   net.JoinHostPort(c.Host, strconv.Itoa(c.Port)),
+		Path:   "/" + c.Name,
+	}
+	return u.String()
+}
 
 type Database struct {
 	pool *pgxpool.Pool

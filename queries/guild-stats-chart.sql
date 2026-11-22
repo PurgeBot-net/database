@@ -1,5 +1,5 @@
 -- What do the bars on the /stats chart show for this server?
--- Grouping and gap-filling copy fillDailyBars and fillMonthlyBars in stats.go, so the bars should match the bot.
+-- Grouping and gap-filling copy GetGuildStats and fillBars in stats.go, so the bars should match the bot.
 -- days 7, 14, 30 or 90 gives one bar per UTC day, ending today. days 0 (the /stats default) gives 12 monthly
 -- bars, ending with this month.
 -- Purges from the partial first day of the window, or from the month 12 months back, count in
